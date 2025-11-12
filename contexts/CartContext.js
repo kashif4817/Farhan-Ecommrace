@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -37,6 +38,18 @@ export function CartProvider({ children }) {
 
       return [...prevCart, { product, variant, quantity: 1 }];
     });
+
+    // Show toast after state update
+    toast.success('Product added to cart', {
+      duration: 500,
+      position: 'top-center',
+      style: {
+        background: '#10b981',
+        color: '#fff',
+        fontSize: '14px',
+        padding: '8px 16px',
+      },
+    });
   };
 
   const removeFromCart = (productId, variantId = null) => {
@@ -72,14 +85,14 @@ export function CartProvider({ children }) {
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
       const price = item.variant ? item.variant.price : item.product.base_price;
-      const discount = item.product.discount_percentage || 0;
-      const finalPrice = price - (price * discount) / 100;
+      const discountAmount = item.product.discount_percentage || 0; // This is PKR amount, not percentage
+      const finalPrice = Math.max(0, price - discountAmount);
       return total + finalPrice * item.quantity;
     }, 0);
   };
 
   const getCartCount = () => {
-    return cart.reduce((count, item) => count + item.quantity, 0);
+    return cart.length;
   };
 
   const toggleCart = () => {

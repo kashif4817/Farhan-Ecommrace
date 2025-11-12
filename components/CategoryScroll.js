@@ -1,17 +1,7 @@
 'use client';
 
-import { DollarSign, GraduationCap, PenTool, Heart, Plane } from 'lucide-react';
 import { useRef } from 'react';
 import Link from 'next/link';
-
-// Icon mapping for categories
-const categoryIcons = {
-  'Investing': DollarSign,
-  'Homework': GraduationCap,
-  'Writing': PenTool,
-  'Health': Heart,
-  'Travel': Plane,
-};
 
 export default function CategoryScroll({ categories }) {
   const scrollRef = useRef(null);
@@ -22,24 +12,24 @@ export default function CategoryScroll({ categories }) {
 
   return (
     <div className="w-full">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+        Categories - Quick Access
+      </h3>
       {/* Categories Container */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth"
+        className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {categories.map((category) => {
-          const IconComponent = categoryIcons[category.name] || DollarSign;
-
           return (
             <Link
               key={category.id}
               href={`/category/${category.id}`}
               className="flex-shrink-0"
             >
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full hover:border-gray-300 hover:shadow-sm transition-all duration-200">
-                <IconComponent className="h-5 w-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              <div className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                <span className="text-sm font-medium whitespace-nowrap">
                   {category.name}
                 </span>
               </div>

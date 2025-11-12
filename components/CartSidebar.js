@@ -24,8 +24,8 @@ export default function CartSidebar() {
 
     cart.forEach((item, index) => {
       const price = item.variant ? item.variant.price : item.product.base_price;
-      const discount = item.product.discount_percentage || 0;
-      const finalPrice = price - (price * discount) / 100;
+      const discountAmount = item.product.discount_percentage || 0; // This is PKR amount, not percentage
+      const finalPrice = Math.max(0, price - discountAmount);
       const variantName = item.variant ? ` (${item.variant.name})` : '';
 
       message += `\n${index + 1}. *${item.product.name}${variantName}*\n`;
@@ -89,8 +89,8 @@ export default function CartSidebar() {
                   const price = item.variant
                     ? item.variant.price
                     : item.product.base_price;
-                  const discount = item.product.discount_percentage || 0;
-                  const finalPrice = price - (price * discount) / 100;
+                  const discountAmount = item.product.discount_percentage || 0; // This is PKR amount, not percentage
+                  const finalPrice = Math.max(0, price - discountAmount);
 
                   return (
                     <div
@@ -117,7 +117,7 @@ export default function CartSidebar() {
                           <p className="text-blue-600 font-bold mt-1">
                             Rs. {finalPrice.toFixed(2)}
                           </p>
-                          {discount > 0 && (
+                          {discountAmount > 0 && (
                             <p className="text-xs text-gray-500 line-through">
                               Rs. {price.toFixed(2)}
                             </p>

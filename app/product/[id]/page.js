@@ -14,6 +14,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +54,9 @@ export default function ProductDetailPage() {
       alert('Please select a variant');
       return;
     }
-    addToCart(product, selectedVariant);
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product, selectedVariant);
+    }
   };
 
   if (loading) {
@@ -80,9 +83,10 @@ export default function ProductDetailPage() {
   }
 
   const displayPrice = selectedVariant ? selectedVariant.price : product.base_price;
-  const discount = product.discount_percentage || 0;
-  const finalPrice = displayPrice - (displayPrice * discount / 100);
-  const savings = displayPrice - finalPrice;
+  const discountAmount = product.discount_percentage || 0; // This is PKR amount, not percentage
+  const finalPrice = Math.max(0, displayPrice - discountAmount);
+  const savings = discountAmount;
+  const discountPercentage = displayPrice > 0 ? Math.round((discountAmount / displayPrice) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
@@ -118,23 +122,25 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {discount > 0 && (
-                  <span className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded">
-                    -{discount}% OFF
+              {/* Badges - Show only one with priority */}
+              <div className="absolute top-4 left-4">
+                {discountAmount > 0 ? (
+                  <span className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded shadow-md">
+                    -{discountPercentage}% OFF
                   </span>
-                )}
-                {product.is_hot_item && (
-                  <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded">
+                ) : product.is_hot_item ? (
+                  <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded shadow-md">
                     HOT ITEM
                   </span>
-                )}
-                {product.is_new_arrival && (
-                  <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded">
+                ) : product.is_new_arrival ? (
+                  <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded shadow-md">
                     NEW ARRIVAL
                   </span>
-                )}
+                ) : product.is_best_seller ? (
+                  <span className="bg-purple-500 text-white text-sm font-bold px-3 py-1 rounded shadow-md">
+                    BESTSELLER
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -162,7 +168,7 @@ export default function ProductDetailPage() {
                 <span className="text-4xl font-bold text-orange-600">
                   Rs. {finalPrice.toFixed(0)}
                 </span>
-                {discount > 0 && (
+                {discountAmount > 0 && (
                   <span className="text-xl text-gray-400 line-through">
                     Rs. {displayPrice.toFixed(0)}
                   </span>
@@ -170,7 +176,7 @@ export default function ProductDetailPage() {
               </div>
               {savings > 0 && (
                 <p className="text-emerald-600 font-semibold">
-                  You save Rs. {savings.toFixed(0)} ({discount}%)
+                  You save Rs. {savings.toFixed(0)} ({discountPercentage}%)
                 </p>
               )}
             </div>
@@ -242,11 +248,31 @@ export default function ProductDetailPage() {
                     <dd className="font-medium text-gray-900">{product.weight}</dd>
                   </>
                 )}
-                <dt className="text-gray-600">Stock:</dt>
-                <dd className={`font-medium ${product.stock_quantity > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {product.stock_quantity > 0 ? `${product.stock_quantity} available` : 'Out of Stock'}
-                </dd>
               </dl>
+            </div>
+
+            {/* Quantity Selector */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Quantity:
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700 transition-colors"
+                >
+                  -
+                </button>
+                <span className="text-xl font-bold text-gray-900 w-12 text-center">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700 transition-colors"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {/* Delivery Info */}
@@ -274,15 +300,10 @@ export default function ProductDetailPage() {
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={product.stock_quantity <= 0}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-4 text-white text-lg font-semibold rounded-xl transition-all shadow-lg ${
-                product.stock_quantity > 0
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 text-white text-lg font-semibold rounded-xl transition-all shadow-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
             >
               <ShoppingCart className="h-6 w-6" />
-              <span>{product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
+              <span>Add to Cart</span>
             </button>
           </div>
         </div>

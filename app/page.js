@@ -74,13 +74,22 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-8 sm:py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+      <div className="relative bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 sm:py-5 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-15">
+          <img
+            src="https://images.unsplash.com/photo-1622519407650-3df9883f76e5?w=1200&auto=format&fit=crop"
+            alt="Eyewear collection"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center space-y-1">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold">
               Welcome to Farhan Ainak Point
             </h1>
-            <p className="text-sm sm:text-base text-emerald-50 max-w-2xl mx-auto">
+            <p className="text-[10px] sm:text-xs text-emerald-50 max-w-2xl mx-auto">
               Your Vision, Our Mission - Browse our collection of quality eyewear
             </p>
           </div>
@@ -89,30 +98,30 @@ export default function HomePage() {
 
       {/* Categories Section */}
       {categories.length > 0 && (
-        <section id="categories" className="py-6 bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="categories" className="py-3 bg-white">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
             <CategoryScroll categories={categories} />
           </div>
         </section>
       )}
 
       {/* Products by Category Section */}
-      <section id="products" className="py-6 sm:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section id="products" className="py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 space-y-4">
           {categories.map((category) => {
             const products = categoryProducts[category.id] || [];
             if (products.length === 0) return null;
 
             return (
-              <div key={category.id} className="space-y-4">
+              <div key={category.id} className="space-y-2">
                 {/* Category Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-1">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900">
                       {category.name}
                     </h2>
                     {category.subtitle && (
-                      <p className="text-sm text-gray-600 mt-0.5">{category.subtitle}</p>
+                      <p className="text-xs text-gray-600 mt-0.5">{category.subtitle}</p>
                     )}
                   </div>
                   {products.length > 6 && (
@@ -127,7 +136,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-1.5 sm:gap-2">
                   {products.slice(0, 12).map((product) => (
                     <ProductCardMinimal
                       key={product.id}
