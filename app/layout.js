@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
+import { ProductCacheProvider } from "@/contexts/ProductCacheContext";
 import Navbar from "@/components/Navbar";
 import CartSidebar from "@/components/CartSidebar";
 import BottomNav from "@/components/BottomNav";
@@ -27,13 +28,15 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>
-          <Toaster />
-          <Navbar />
-          <CartSidebar />
-          {children}
-          <BottomNav />
-        </CartProvider>
+        <ProductCacheProvider>
+          <CartProvider>
+            <Toaster />
+            <Navbar />
+            <CartSidebar />
+            {children}
+            <BottomNav />
+          </CartProvider>
+        </ProductCacheProvider>
       </body>
     </html>
   );

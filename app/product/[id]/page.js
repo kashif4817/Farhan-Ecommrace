@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useParams, useRouter } from 'next/navigation';
+import { useProductCache } from '@/contexts/ProductCacheContext';
 import { Loader2, ShoppingCart, ArrowLeft, Package, CheckCircle, Truck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import FooterMinimal from '@/components/FooterMinimal';
 import Image from 'next/image';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
+  const { products, loading: cacheLoading } = useProductCache();
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -18,36 +20,13 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (params.id) {
-      fetchProduct();
-    }
-  }, [params.id]);
-
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch product with category and variants
-      const { data: productData, error: productError } = await supabase
-        .from('products')
-        .select(`
-          *,
-          categories (*),
-          product_variants (*)
-        `)
-        .eq('id', params.id)
-        .single();
-
-      if (productError) throw productError;
-
-      setProduct(productData);
-      setVariants(productData.product_variants || []);
-    } catch (error) {
-      console.error('Error fetching product:', error);
-    } finally {
+    if (!cacheLoading && params.id) {
+      const prod = products.find(p => p.id === params.id);
+      setProduct(prod || null);
+      setVariants(prod?.product_variants || []);
       setLoading(false);
     }
-  };
+  }, [params.id, products, cacheLoading]);
 
   const handleAddToCart = () => {
     if (variants.length > 0 && !selectedVariant) {
@@ -89,13 +68,13 @@ export default function ProductDetailPage() {
   const discountPercentage = displayPrice > 0 ? Math.round((discountAmount / displayPrice) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Back Button */}
-      <div className="bg-white border-b sticky top-0 z-30">
+      <div className="bg-white  sticky top-12 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-700 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
             <span className="font-medium">Back</span>
@@ -103,7 +82,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 flex-1">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Product Image */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -308,6 +287,9 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Minimal Footer */}
+      <FooterMinimal />
     </div>
   );
 }
