@@ -1,12 +1,29 @@
 'use client';
 
-import { ShoppingCart, Glasses } from 'lucide-react';
+import { ShoppingCart, Glasses, RefreshCw } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useProductCache } from '@/contexts/ProductCacheContext';
 import Link from 'next/link';
 import SearchBar from './SearchBar';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const { getCartCount, toggleCart } = useCart();
+  const { refreshCache, lastUpdate, isCacheValid } = useProductCache();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshCache();
+      toast.success('Products updated successfully!');
+    } catch (error) {
+      toast.error('Failed to refresh products');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-40">
@@ -42,7 +59,7 @@ export default function Navbar() {
             >
               Deals
             </Link>
-            <Link
+            {/* <Link
               href="#categories"
               className="text-gray-700 hover:text-emerald-600 transition-colors duration-200 font-medium text-[15px]"
             >
@@ -53,7 +70,7 @@ export default function Navbar() {
               className="text-gray-700 hover:text-emerald-600 transition-colors duration-200 font-medium text-[15px]"
             >
               Products
-            </Link>
+            </Link> */}
             <Link
               href="/about"
               className="text-gray-700 hover:text-emerald-600 transition-colors duration-200 font-medium text-[15px]"
@@ -66,6 +83,19 @@ export default function Navbar() {
             >
               Contact
             </Link>
+
+            {/* Refresh Cache Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="relative p-2 text-gray-700 hover:text-emerald-600 transition-colors disabled:opacity-50"
+              title={isCacheValid ? 'Cache is up to date' : 'Refresh products data'}
+            >
+              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+              {!isCacheValid && (
+                <span className="absolute -top-0.5 -right-0.5 bg-orange-500 h-2 w-2 rounded-full"></span>
+              )}
+            </button>
 
             {/* Cart Icon for Desktop */}
             <button

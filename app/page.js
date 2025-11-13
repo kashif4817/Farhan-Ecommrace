@@ -1,66 +1,40 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useProductCache } from '@/contexts/ProductCacheContext';
 import CategoryScroll from '@/components/CategoryScroll';
 import ProductCardMinimal from '@/components/ProductCardMinimal';
+import ProductFilter from '@/components/ProductFilter';
 import Footer from '@/components/Footer';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomePage() {
-  const [categories, setCategories] = useState([]);
+  const { categories, products, loading, getProductsByCategory } = useProductCache();
   const [categoryProducts, setCategoryProducts] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [filteredCategoryProducts, setFilteredCategoryProducts] = useState({});
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch all categories
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (categoriesError) throw categoriesError;
-
-      setCategories(categoriesData || []);
-
-      // Fetch products for each category (limit to 2 rows = 4 products on mobile, 6 on desktop)
-      const productsPromises = categoriesData.map(async (category) => {
-        const { data: products, error } = await supabase
-          .from('products')
-          .select(`
-            *,
-            product_variants (*)
-          `)
-          .eq('category_id', category.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(6);
-
-        if (error) throw error;
-
-        return { categoryId: category.id, products: products || [] };
-      });
-
-      const productsResults = await Promise.all(productsPromises);
+    if (!loading && categories.length > 0) {
       const productsMap = {};
-      productsResults.forEach(({ categoryId, products }) => {
-        productsMap[categoryId] = products;
+      categories.forEach((category) => {
+        const categoryProds = getProductsByCategory(category.id);
+        productsMap[category.id] = categoryProds.slice(0, 14);
       });
-
       setCategoryProducts(productsMap);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
+      setFilteredCategoryProducts(productsMap);
     }
+  }, [categories, products, loading]);
+
+  const handleFilterChange = (filteredProducts) => {
+    // Group filtered products by category
+    const productsMap = {};
+    categories.forEach((category) => {
+      const categoryProds = filteredProducts.filter(p => p.category_id === category.id);
+      productsMap[category.id] = categoryProds.slice(0, 14);
+    });
+    setFilteredCategoryProducts(productsMap);
   };
 
   if (loading) {
@@ -105,11 +79,21 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Filters Section */}
+      {products.length > 0 && (
+        <ProductFilter
+          products={products}
+          onFilterChange={handleFilterChange}
+          showCategoryFilter={true}
+          categories={categories}
+        />
+      )}
+
       {/* Products by Category Section */}
       <section id="products" className="py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 space-y-4">
           {categories.map((category) => {
-            const products = categoryProducts[category.id] || [];
+            const products = filteredCategoryProducts[category.id] || [];
             if (products.length === 0) return null;
 
             return (
@@ -124,20 +108,18 @@ export default function HomePage() {
                       <p className="text-xs text-gray-600 mt-0.5">{category.subtitle}</p>
                     )}
                   </div>
-                  {products.length > 6 && (
-                    <Link
-                      href={`/category/${category.id}`}
-                      className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group"
-                    >
-                      <span>View All</span>
-                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  )}
+                  <Link
+                    href={`/category/${category.id}`}
+                    className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group"
+                  >
+                    <span>Show More</span>
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
                 </div>
 
                 {/* Products Grid */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-1.5 sm:gap-2">
-                  {products.slice(0, 12).map((product) => (
+                  {products.slice(0, 14).map((product) => (
                     <ProductCardMinimal
                       key={product.id}
                       product={product}
@@ -147,7 +129,7 @@ export default function HomePage() {
                 </div>
 
                 {/* See More Button (Mobile) */}
-                {products.length > 10 && (
+                {products.length > 14 && (
                   <div className="flex justify-center">
                     <Link
                       href={`/category/${category.id}`}

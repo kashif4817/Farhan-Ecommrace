@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(rm:*)",
+      "Bash(npm config:*)",
+      "Bash(echo:*)",
+      "Bash(npx next dev)",
+      "Bash(cat:*)",
+      "Bash(node -e:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
